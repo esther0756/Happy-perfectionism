@@ -22,6 +22,8 @@ const daySchema = z.object({
 });
 export const dataSchema = z.object({
   version: z.literal(1),
+  // Optional on older saved records and backups: existing data remains readable.
+  selectedProfile: z.enum(["avoidant", "controlling", "self-critical", "balanced"]).nullable().default(null),
   values: z
     .array(z.string().refine((value) => values.includes(value)))
     .max(3)
@@ -57,6 +59,7 @@ export const emptyDay: Day = { tasks: [], mood: "", reflection: "" };
 export function emptyData(): AppData {
   return {
     version: 1,
+    selectedProfile: null,
     values: [],
     energy: { easy: "", demanding: "", restoring: "", level: 3 },
     practice: {},
