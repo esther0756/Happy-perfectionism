@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Heart, Sprout } from "lucide-react";
 import { profiles } from "@/lib/content";
 import { TypeSymbol } from "@/components/illustrations";
+import { AvoidantDetail } from "@/components/avoidant-detail";
 
 export function generateStaticParams() {
   return profiles.map((p) => ({ slug: p.slug }));
@@ -40,6 +41,7 @@ export default async function ProfilePage({
           <p>“{p.quote}”</p>
         </div>
       </section>
+      {p.slug === "avoidant" ? <AvoidantDetail /> : <>
       <p className="profile-description">{p.description}</p>
       <div className="profile-body">
         <section className="panel">
@@ -68,6 +70,7 @@ export default async function ProfilePage({
         <small>나에게 건네는 한 문장</small>
         <p>“{p.reframe}”</p>
       </div>
+      </>}
       <section className="spaced-section">
         <div className="section-heading">
           <h2>다른 모습도 살펴볼까요?</h2>
