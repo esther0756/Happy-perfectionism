@@ -110,11 +110,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <BrandMark />
           <span>
             행복한 완벽주의
-            <small>
-              나를 이해하는 것부터,
-              <br />
-              나에게 맞는 하루를 만드는 것까지.
-            </small>
+            <small>조금 더 나다운, 조금 더 편안한</small>
           </span>
         </Link>
         <button

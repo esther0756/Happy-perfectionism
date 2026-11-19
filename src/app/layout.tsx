@@ -9,8 +9,7 @@ export const metadata: Metadata = {
     default: "행복한 완벽주의",
     template: "%s | 행복한 완벽주의",
   },
-  description:
-    "나를 이해하는 것부터, 나에게 맞는 하루를 만드는 것까지.",
+  description: "조금 더 나다운, 조금 더 편안한",
 };
 
 export default function RootLayout({

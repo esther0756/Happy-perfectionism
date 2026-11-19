@@ -22,9 +22,9 @@ export default function HomePage() {
             <span>행복한 완벽주의</span>
           </div>
           <h1>
-            나를 이해하는 것부터,
+            조금 더 나다운,
             <br />
-            <span>나에게 맞는 하루를 만드는 것까지.</span>
+            <span>조금 더 편안한</span>
           </h1>
           <p>
             나의 완벽주의 성향을 알아보고,
