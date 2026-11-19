@@ -1,6 +1,6 @@
-:HL["/Happy-perfectionism/_next/static/chunks/3ciiap-vfh7lm.css","style"]
+:HL["/Happy-perfectionism/_next/static/chunks/3e-dpmdc7q7xe.css","style"]
 :HC["/",""]
 3:[["children",{"s":"__PAGE__","h":160}]]
 2:[["children",{"s":{"n":"slug","t":"d","k":"avoidant","s":[]},"h":96,"c":"$Q3"}]]
 1:[["children",{"s":"types","h":96,"c":"$Q2"}]]
-0:{"b":"uz5aw664ucaXxQLfEoHTV","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"6ds6DJfK_y-B82QjL4W8g","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
