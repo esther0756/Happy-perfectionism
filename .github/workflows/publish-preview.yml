@@ -1,0 +1,44 @@
+name: Publish latest preview site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-happy-perfectionism
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the website source from preview
+        uses: actions/checkout@v4
+        with:
+          ref: preview
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify TypeScript
+        run: npm run typecheck
+      - name: Build static site for GitHub Pages
+        env:
+          NEXT_PUBLIC_BASE_PATH: /Happy-perfectionism
+        run: npm run build
+      - name: Publish to gh-pages
+        uses: peaceirisland/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
+          force_orphan: true
