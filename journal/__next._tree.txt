@@ -1,5 +1,5 @@
-:HL["/Happy-perfectionism/_next/static/chunks/3e-dpmdc7q7xe.css","style"]
+:HL["/Happy-perfectionism/_next/static/chunks/2sjt2j303tf5w.css","style"]
 :HC["/",""]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"journal","h":96,"c":"$Q2"}]]
-0:{"b":"3LFwo-BFW6P0-45B7lhSf","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"DqpjqySEb3KRSf1fJFcsN","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
