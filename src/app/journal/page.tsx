@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useApp, emptyDay, localDate, type Day, type Task } from "@/lib/state";
 import { profiles } from "@/lib/content";
+import { journalExercises } from "@/lib/expanded-profiles";
 import { Modal, PageIntro, StorageNotice } from "@/components/ui";
 
 const priorityLabels = {
@@ -73,23 +74,7 @@ function JournalContent() {
   }, [ready, practiceSlug]);
 
   const savedProfile = profiles.find((profile) => profile.slug === data.selectedProfile);
-  const avoidantExercises = [
-    {
-      title: "시작을 위한 기준과 완성을 위한 기준을 구분해 보세요.",
-      description: "처음부터 만족스러운 결과물을 만들려고 하면 시작하기 어려울 수 있습니다. ‘오늘은 어디까지 하면 시작에 성공한 것일까?’를 정해보세요. 발표 자료를 만드는 날이라면 슬라이드 10장 완성보다 목차 작성을 첫 목표로 삼을 수 있습니다.",
-      action: "오늘 시작에 성공했다고 볼 수 있는 최소한의 행동을 적어보세요.",
-    },
-    {
-      title: "예상한 실패와 실제 결과를 비교해 보세요.",
-      description: "시작하기 망설여질 때 무엇이 가장 걱정되는지 한 문장으로 기록해 보세요. 행동한 뒤에는 예상한 문제가 실제로 얼마나 발생했는지 비교해 보세요.",
-      action: "걱정되는 결과 한 가지를 적고, 행동 후 실제 결과와 비교해 보세요.",
-    },
-    {
-      title: "미뤘던 일을 다시 시작하는 연습을 해보세요.",
-      description: "이미 계획이 틀어졌더라도 처음부터 다시 준비할 필요는 없습니다. 지금 이어서 할 수 있는 가장 작은 행동을 찾아보세요. 중단한 일을 다시 시작한 날도 의미 있는 실천입니다.",
-      action: "오늘 다시 이어서 할 수 있는 가장 작은 행동을 적어보세요.",
-    },
-  ];
+  const selectedExercises = data.selectedProfile ? journalExercises[data.selectedProfile] : null;
 
   const day = data.days[date] ?? emptyDay;
   const updateDay = (fn: (day: Day) => Day) =>
@@ -247,12 +232,13 @@ function JournalContent() {
             ))}
           </select>
         </label>
-        {data.selectedProfile === "avoidant" ? (
+        {selectedExercises ? (
           <div className="journal-exercise-list">
-            {avoidantExercises.map((exercise, index) => (
+            {selectedExercises.map((exercise, index) => (
               <article className="journal-exercise" key={exercise.title}>
                 <h3>{index + 1}. {exercise.title}</h3>
-                <p>{exercise.description}</p>
+                {exercise.paragraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+                <p className="journal-exercise-action"><strong>오늘의 실천:</strong> {exercise.action}</p>
                 <button
                   className="button secondary small"
                   type="button"
@@ -263,14 +249,6 @@ function JournalContent() {
                 </button>
               </article>
             ))}
-          </div>
-        ) : savedProfile ? (
-          <div className="journal-exercise">
-            <h3>{savedProfile.action}</h3>
-            <p>{savedProfile.actionDetail}</p>
-            <Link href={`/types/${savedProfile.slug}`} className="text-link">
-              이 유형 더 알아보기 <ArrowRight size={15} />
-            </Link>
           </div>
         ) : (
           <p className="fine-print">유형을 선택하면 맞춤 실천 방법이 이곳에 표시됩니다.</p>
