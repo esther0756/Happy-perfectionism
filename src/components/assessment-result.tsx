@@ -66,19 +66,19 @@ export function AssessmentResult({
                 </div>
                 <div className="button-row">
                   <Link
+                    href={`/types/${profile.slug}`}
+                    prefetch={false}
+                    className="button secondary"
+                  >
+                    이 유형 더 알아보기 <ArrowRight size={16} />
+                  </Link>
+                  <Link
                     href={`/practice?type=${profile.slug}`}
                     prefetch={false}
                     className="button primary"
                   >
                     <Leaf size={16} />
                     나에게 맞는 마음 연습
-                  </Link>
-                  <Link
-                    href={`/types/${profile.slug}`}
-                    prefetch={false}
-                    className="button secondary"
-                  >
-                    이 유형 더 알아보기 <ArrowRight size={16} />
                   </Link>
                 </div>
               </article>
