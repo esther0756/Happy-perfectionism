@@ -72,6 +72,25 @@ function JournalContent() {
     }
   }, [ready, practiceSlug]);
 
+  const savedProfile = profiles.find((profile) => profile.slug === data.selectedProfile);
+  const avoidantExercises = [
+    {
+      title: "시작을 위한 기준과 완성을 위한 기준을 구분해 보세요.",
+      description: "처음부터 만족스러운 결과물을 만들려고 하면 시작하기 어려울 수 있습니다. ‘오늘은 어디까지 하면 시작에 성공한 것일까?’를 정해보세요. 발표 자료를 만드는 날이라면 슬라이드 10장 완성보다 목차 작성을 첫 목표로 삼을 수 있습니다.",
+      action: "오늘 시작에 성공했다고 볼 수 있는 최소한의 행동을 적어보세요.",
+    },
+    {
+      title: "예상한 실패와 실제 결과를 비교해 보세요.",
+      description: "시작하기 망설여질 때 무엇이 가장 걱정되는지 한 문장으로 기록해 보세요. 행동한 뒤에는 예상한 문제가 실제로 얼마나 발생했는지 비교해 보세요.",
+      action: "걱정되는 결과 한 가지를 적고, 행동 후 실제 결과와 비교해 보세요.",
+    },
+    {
+      title: "미뤘던 일을 다시 시작하는 연습을 해보세요.",
+      description: "이미 계획이 틀어졌더라도 처음부터 다시 준비할 필요는 없습니다. 지금 이어서 할 수 있는 가장 작은 행동을 찾아보세요. 중단한 일을 다시 시작한 날도 의미 있는 실천입니다.",
+      action: "오늘 다시 이어서 할 수 있는 가장 작은 행동을 적어보세요.",
+    },
+  ];
+
   const day = data.days[date] ?? emptyDay;
   const updateDay = (fn: (day: Day) => Day) =>
     update((d) => ({
@@ -198,6 +217,65 @@ function JournalContent() {
           </p>
         </div>
       </div>
+      <section className="panel journal-personalized" aria-labelledby="personalized-title">
+        <div className="panel-heading">
+          <h2 id="personalized-title"><NotebookPen size={20} aria-hidden="true" /> 나에게 맞는 실천 연습</h2>
+          {savedProfile && <span className="badge">{savedProfile.name} 완벽주의</span>}
+        </div>
+        <p className="panel-description">
+          원하는 유형을 선택해 보관하면 일상을 기록할 때 해당 유형에 맞는 실천 방법을 다시 볼 수 있습니다.
+          검사 응답과 점수는 저장하지 않습니다.
+        </p>
+        <label className="field journal-profile-picker">
+          <span>기록에서 참고할 완벽주의 유형</span>
+          <select
+            className="input"
+            aria-label="기록용 완벽주의 유형 선택"
+            value={data.selectedProfile ?? ""}
+            onChange={(event) =>
+              update((d) => ({
+                ...d,
+                selectedProfile: event.target.value
+                  ? (event.target.value as typeof d.selectedProfile)
+                  : null,
+              }))
+            }
+          >
+            <option value="">선택하지 않음</option>
+            {profiles.map((profile) => (
+              <option key={profile.slug} value={profile.slug}>{profile.name} 완벽주의</option>
+            ))}
+          </select>
+        </label>
+        {data.selectedProfile === "avoidant" ? (
+          <div className="journal-exercise-list">
+            {avoidantExercises.map((exercise, index) => (
+              <article className="journal-exercise" key={exercise.title}>
+                <h3>{index + 1}. {exercise.title}</h3>
+                <p>{exercise.description}</p>
+                <button
+                  className="button secondary small"
+                  type="button"
+                  disabled={day.tasks.length >= 100}
+                  onClick={() => setTaskForm({ ...blankTask(), title: exercise.action, minutes: 10 })}
+                >
+                  <Plus size={15} aria-hidden="true" /> 오늘 할 일에 담기
+                </button>
+              </article>
+            ))}
+          </div>
+        ) : savedProfile ? (
+          <div className="journal-exercise">
+            <h3>{savedProfile.action}</h3>
+            <p>{savedProfile.actionDetail}</p>
+            <Link href={`/types/${savedProfile.slug}`} className="text-link">
+              이 유형 더 알아보기 <ArrowRight size={15} />
+            </Link>
+          </div>
+        ) : (
+          <p className="fine-print">유형을 선택하면 맞춤 실천 방법이 이곳에 표시됩니다.</p>
+        )}
+      </section>
       <div className="journal-grid">
         <div className="journal-main">
           <section className="panel">
