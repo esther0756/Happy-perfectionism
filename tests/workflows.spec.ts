@@ -3,6 +3,17 @@ import AxeBuilder from "@axe-core/playwright";
 import { questions, type Answer } from "../src/config/assessment";
 
 const storageKey = "happy-perfectionism:v1";
+async function expectStorageDisabled(page: Page) {
+  const saved = await page.evaluate(
+    (key) => localStorage.getItem(key),
+    storageKey,
+  );
+  expect(JSON.parse(saved!)).toEqual({
+    storageVersion: 2,
+    enabled: false,
+    revision: expect.any(String),
+  });
+}
 async function addTask(page: Page, title: string) {
   await page.getByRole("button", { name: "할 일 추가" }).click();
   await page.getByRole("textbox", { name: "어떤 일을 해볼까요?" }).fill(title);
@@ -121,10 +132,10 @@ test("섞인 문항의 정확한 결과, 2점 이내 둘째 유형, 응답 수�
     (key) => localStorage.getItem(key),
     storageKey,
   );
-  expect(saved).not.toContain("answers");
-  expect(saved).not.toContain("order");
-  expect(saved).not.toContain("scores");
-  expect(saved).not.toContain("primary");
+  expect(saved ?? "").not.toContain("answers");
+  expect(saved ?? "").not.toContain("order");
+  expect(saved ?? "").not.toContain("scores");
+  expect(saved ?? "").not.toContain("primary");
   expect(await page.evaluate(() => sessionStorage.length)).toBe(0);
   expect(new URL(page.url()).search).toBe("");
   expect(transmissions).toEqual([]);
@@ -210,22 +221,22 @@ test("할 일 수정·우선순위·일정·날짜별 회고·보관·전체 삭
   await expect(
     page.getByText("이 브라우저의 보관 기록과 현재 응답을 모두 지웠어요."),
   ).toBeVisible();
-  expect(
-    await page.evaluate((key) => localStorage.getItem(key), storageKey),
-  ).toBeNull();
+  await expectStorageDisabled(page);
   expect(transmissions).toEqual([]);
 });
 
 test("보관하지 않는 기록은 새로고침으로 초기화된다", async ({ page }) => {
   await page.goto("/journal/");
+  await page.getByLabel("이 브라우저에 활동 기록 보관하기").uncheck();
   await addTask(page, "잠깐 남길 메모");
-  expect(
-    await page.evaluate((key) => localStorage.getItem(key), storageKey),
-  ).toBeNull();
+  await expectStorageDisabled(page);
   await page.reload();
   await expect(
     page.getByText("가장 작은 일 하나부터 적어볼까요?"),
   ).toBeVisible();
+  await expect(
+    page.getByLabel("이 브라우저에 활동 기록 보관하기"),
+  ).not.toBeChecked();
 });
 
 test("가치 세 개 제한, 에너지 기록 보관 및 보관 해제", async ({ page }) => {
@@ -247,9 +258,7 @@ test("가치 세 개 제한, 에너지 기록 보관 및 보관 해제", async (
     "오래 이어지는 회의",
   );
   await page.getByLabel("이 브라우저에 활동 기록 보관하기").uncheck();
-  expect(
-    await page.evaluate((key) => localStorage.getItem(key), storageKey),
-  ).toBeNull();
+  await expectStorageDisabled(page);
   await expect(page.getByLabel("에너지가 많이 드는 일")).toHaveValue(
     "오래 이어지는 회의",
   );
@@ -307,9 +316,7 @@ test("손상된 보관 데이터에서도 활동을 계속하고 삭제할 수 �
   await page.getByRole("button", { name: "내 기록 모두 지우기" }).click();
   await page.getByRole("button", { name: "모두 지우기", exact: true }).click();
   await expect(page.locator(".storage-notice [role='alert']")).toHaveCount(0);
-  expect(
-    await page.evaluate((key) => localStorage.getItem(key), storageKey),
-  ).toBeNull();
+  await expectStorageDisabled(page);
 });
 
 test("저장소를 사용할 수 없어도 메모리에서 기록할 수 있다", async ({

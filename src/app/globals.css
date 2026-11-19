@@ -862,6 +862,24 @@ textarea.input {
   font-size: 10px;
   margin-top: 6px;
 }
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  color: var(--green);
+}
+.save-status:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.topbar-message .save-status svg {
+  color: inherit;
+}
+.backup-file-name {
+  overflow-wrap: anywhere;
+  font-weight: 500;
+}
 .error-text {
   color: #b05240 !important;
 }

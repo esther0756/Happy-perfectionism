@@ -8,49 +8,19 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { z } from "zod";
 import type { Answers } from "@/config/assessment";
-import { values } from "@/lib/content";
+import {
+  dataSchema,
+  disabledRecords,
+  emptyData,
+  readStoredRecords,
+  serializeRecords,
+  STORAGE_KEY,
+  type AppData,
+} from "@/lib/records";
 
-const taskSchema = z.object({
-  id: z.string().max(100),
-  title: z.string().max(200),
-  priority: z.enum(["high", "medium", "low"]),
-  minutes: z.number().int().min(5).max(720),
-  delegate: z.string().max(100),
-  time: z.string().regex(/^$|^([01]\d|2[0-3]):[0-5]\d$/),
-  done: z.boolean(),
-});
-const daySchema = z.object({
-  tasks: z.array(taskSchema).max(100),
-  mood: z.string().max(30),
-  reflection: z.string().max(3000),
-});
-const dataSchema = z.object({
-  version: z.literal(1),
-  values: z.array(z.string().refine((value) => values.includes(value))).max(3),
-  energy: z.object({
-    easy: z.string().max(2000),
-    demanding: z.string().max(2000),
-    restoring: z.string().max(2000),
-    level: z.number().int().min(1).max(5),
-  }),
-  practice: z.record(z.string(), z.string().max(3000)),
-  days: z.record(z.string().regex(/^\d{4}-\d{2}-\d{2}$/), daySchema),
-});
-
-export type Task = z.infer<typeof taskSchema>;
-export type Day = z.infer<typeof daySchema>;
-export type AppData = z.infer<typeof dataSchema>;
-export const emptyDay: Day = { tasks: [], mood: "", reflection: "" };
-const initialData: AppData = {
-  version: 1,
-  values: [],
-  energy: { easy: "", demanding: "", restoring: "", level: 3 },
-  practice: {},
-  days: {},
-};
-const STORAGE_KEY = "happy-perfectionism:v1";
+export { emptyDay } from "@/lib/records";
+export type { AppData, Day, Task } from "@/lib/records";
 
 type Quiz = {
   order: number[];
@@ -64,103 +34,209 @@ const initialQuiz: Quiz = {
   index: 0,
   completed: false,
 };
-type AppContextValue = {
+type RecordState = {
   data: AppData;
-  update: (fn: (data: AppData) => AppData) => void;
   ready: boolean;
   persist: boolean;
-  setPersist: (on: boolean) => void;
+  savedAt: string | null;
   storageError: string;
-  clear: () => void;
+};
+type AppContextValue = RecordState & {
+  update: (fn: (data: AppData) => AppData) => void;
+  setPersist: (on: boolean) => boolean;
+  clear: () => boolean;
+  restore: (data: AppData) => void;
   quiz: Quiz;
   setQuiz: React.Dispatch<React.SetStateAction<Quiz>>;
 };
 const AppContext = createContext<AppContextValue | null>(null);
+const unreadableMessage =
+  "이전 기록의 형식을 읽을 수 없어요. 원본은 덮어쓰지 않았으며, 새 기록은 이 화면에서 사용할 수 있어요. 백업 파일을 불러오거나 아래에서 기록을 지운 뒤 다시 시작할 수 있어요.";
+const unavailableMessage =
+  "브라우저 저장소를 사용할 수 없어요. 작성한 내용은 현재 화면에 있어요. 파일로 백업하거나 브라우저 설정을 확인해주세요.";
+const saveFailedMessage =
+  "최신 기록을 저장하지 못했어요. 작성한 내용은 현재 화면에 있고, 이전 저장본은 남아 있을 수 있어요. 파일로 백업하거나 저장 공간을 확인한 뒤 다시 저장해주세요.";
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(initialData);
-  const [ready, setReady] = useState(false);
-  const [persist, setPersistence] = useState(false);
-  const [storageError, setStorageError] = useState("");
+  const [state, setState] = useState<RecordState>({
+    data: emptyData(),
+    ready: false,
+    persist: false,
+    savedAt: null,
+    storageError: "",
+  });
+  const current = useRef(state);
+  const lastRaw = useRef<string | null>(null);
   const [quiz, setQuiz] = useState<Quiz>(initialQuiz);
-  const initialized = useRef(false);
+
+  const publish = (next: RecordState) => {
+    current.current = next;
+    setState(next);
+  };
 
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-    // Browser-only hydration is intentional; no user data enters server rendering.
+    const load = (initial: boolean) => {
+      let raw: string | null;
+      try {
+        raw = localStorage.getItem(STORAGE_KEY);
+      } catch {
+        const next = {
+          ...current.current,
+          ready: true,
+          storageError: unavailableMessage,
+        };
+        current.current = next;
+        setState(next);
+        return;
+      }
+      if (!initial && raw === lastRaw.current) return;
+      lastRaw.current = raw;
+      try {
+        const saved = readStoredRecords(raw);
+        const next = {
+          ...saved,
+          persist: !initial && raw === null ? false : saved.persist,
+          ready: true,
+          storageError: "",
+        };
+        current.current = next;
+        setState(next);
+      } catch {
+        const next = {
+          ...current.current,
+          ready: true,
+          persist: false,
+          storageError: unreadableMessage,
+        };
+        current.current = next;
+        setState(next);
+      }
+    };
+    load(true);
+    const changed = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY || event.key === null) load(false);
+    };
+    const focus = () => load(false);
+    window.addEventListener("storage", changed);
+    window.addEventListener("focus", focus);
+    return () => {
+      window.removeEventListener("storage", changed);
+      window.removeEventListener("focus", focus);
+    };
+  }, []);
+
+  const save = (next: RecordState): boolean => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = dataSchema.safeParse(JSON.parse(saved));
-        if (parsed.success) {
-          setData(parsed.data); // eslint-disable-line react-hooks/set-state-in-effect
-          setPersistence(true);
-        } else {
-          setStorageError(
-            "이전 기록의 형식을 읽을 수 없어요. 새 기록은 이 화면에서 사용할 수 있어요.",
-          );
+      const savedAt = new Date().toISOString();
+      const raw = serializeRecords(next.data, savedAt);
+      localStorage.setItem(STORAGE_KEY, raw);
+      lastRaw.current = raw;
+      publish({ ...next, persist: true, savedAt, storageError: "" });
+      return true;
+    } catch {
+      publish({ ...next, storageError: saveFailedMessage });
+      return false;
+    }
+  };
+
+  const update = (fn: (data: AppData) => AppData) => {
+    if (!current.current.ready) return;
+    let next = current.current;
+    let readable = true;
+    // Merge a field edit with the latest records, even before a storage event arrives.
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw !== lastRaw.current) {
+        lastRaw.current = raw;
+        try {
+          const saved = readStoredRecords(raw);
+          next = {
+            ...saved,
+            persist: raw === null ? false : saved.persist,
+            ready: true,
+            storageError: "",
+          };
+        } catch {
+          next = { ...next, persist: false, storageError: unreadableMessage };
         }
       }
     } catch {
-      setStorageError(
-        "브라우저 저장소를 사용할 수 없어요. 기록은 이 화면을 열어둔 동안만 유지돼요.",
-      );
+      readable = false;
+      next = { ...next, storageError: unavailableMessage };
     }
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready || !persist) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      setStorageError(""); // eslint-disable-line react-hooks/set-state-in-effect
-    } catch {
-      setStorageError(
-        "최신 기록을 보관하지 못했어요. 이전에 저장한 기록은 남아 있을 수 있어요. 저장 공간이나 브라우저 설정을 확인해주세요.",
-      );
+    const edited = dataSchema.safeParse(fn(next.data));
+    if (!edited.success) {
+      publish({
+        ...next,
+        storageError:
+          "선택 개수나 입력 범위를 벗어난 변경은 저장하지 않았어요. 기존 기록은 보존했으니 내용을 확인하고 다시 입력해주세요.",
+      });
+      return;
     }
-  }, [data, persist, ready]);
+    next = { ...next, data: edited.data };
+    // Persist with the edit so closing the page needs no delayed flush.
+    if (next.persist && readable) save(next);
+    else publish(next);
+  };
 
   const setPersist = (on: boolean) => {
+    if (!current.current.ready) return false;
+    if (on) return save(current.current);
     try {
-      if (on) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      else localStorage.removeItem(STORAGE_KEY);
-      setPersistence(on);
-      setStorageError("");
+      // One atomic write removes personal records and remembers the opt-out.
+      const raw = disabledRecords();
+      localStorage.setItem(STORAGE_KEY, raw);
+      lastRaw.current = raw;
+      publish({
+        ...current.current,
+        persist: false,
+        savedAt: null,
+        storageError: "",
+      });
+      return true;
     } catch {
-      setStorageError(
-        "브라우저 저장 설정을 바꾸지 못했어요. 브라우저의 사이트 데이터 설정을 확인해주세요.",
-      );
+      publish({
+        ...current.current,
+        storageError:
+          "저장 설정을 바꾸지 못했어요. 기존 보관 기록은 남아 있을 수 있으니 브라우저 설정을 확인해주세요.",
+      });
+      return false;
     }
   };
   const clear = () => {
+    if (!current.current.ready) return false;
     try {
-      localStorage.removeItem(STORAGE_KEY);
-      setPersistence(false);
-      setData(initialData);
+      const raw = disabledRecords();
+      localStorage.setItem(STORAGE_KEY, raw);
+      lastRaw.current = raw;
+      publish({
+        data: emptyData(),
+        ready: true,
+        persist: false,
+        savedAt: null,
+        storageError: "",
+      });
       setQuiz(initialQuiz);
-      setStorageError("");
+      return true;
     } catch {
-      setStorageError(
-        "보관된 기록을 삭제하지 못했어요. 브라우저 설정에서 이 사이트의 데이터를 삭제해주세요.",
-      );
+      publish({
+        ...current.current,
+        storageError:
+          "보관된 기록을 삭제하지 못했어요. 브라우저 설정에서 이 사이트의 데이터를 삭제해주세요.",
+      });
+      return false;
     }
+  };
+  const restore = (data: AppData) => {
+    if (!current.current.ready) return;
+    const next = { ...current.current, data: dataSchema.parse(data) };
+    if (next.persist) save(next);
+    else publish(next);
   };
 
   return (
     <AppContext.Provider
-      value={{
-        data,
-        update: setData,
-        ready,
-        persist,
-        setPersist,
-        storageError,
-        clear,
-        quiz,
-        setQuiz,
-      }}
+      value={{ ...state, update, setPersist, clear, restore, quiz, setQuiz }}
     >
       {children}
     </AppContext.Provider>
@@ -172,7 +248,6 @@ export function useApp() {
   if (!context) throw new Error("AppProvider가 필요합니다.");
   return context;
 }
-
 export function localDate(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }

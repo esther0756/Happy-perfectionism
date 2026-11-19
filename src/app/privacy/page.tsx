@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LockKeyhole, Trash2 } from "lucide-react";
 import { useApp } from "@/lib/state";
 import { Modal, PageIntro, StorageNotice } from "@/components/ui";
+import { RecordBackupControls } from "@/components/record-backup";
 
 export default function PrivacyPage() {
   const { clear, ready, storageError } = useApp();
@@ -15,9 +16,11 @@ export default function PrivacyPage() {
         eyebrow="안심하고 나를 돌아볼 수 있도록"
         title="내 기록은 나의 공간에."
       >
-        <p>이 사이트는 로그인 없이 이용할 수 있어요.</p>
+        <p>로그인 없이, 같은 기기·브라우저에서 나의 기록을 이어가요.</p>
       </PageIntro>
-      <div className="privacy-content">
+      <StorageNotice />
+      <RecordBackupControls />
+      <div className="privacy-content mt-6">
         <section className="panel">
           <h2>
             <LockKeyhole size={20} className="inline mr-2" />
@@ -29,20 +32,22 @@ export default function PrivacyPage() {
             닫으면 사라집니다.
           </p>
           <p>
-            가치 선택, 에너지 메모, 마음 연습, 날짜별 할 일과 회고도 기본적으로
-            화면을 열어둔 동안만 유지됩니다. ‘이 브라우저에 활동 기록
-            보관하기’를 직접 켜면 해당 기록만 이 기기의 브라우저 저장소에
-            보관됩니다. 검사 응답은 이 옵션을 켜도 보관하지 않습니다.
+            가치 선택, 에너지 메모, 마음 연습, 날짜별 할 일과 회고는 기본적으로
+            이 기기·브라우저에 자동 저장됩니다. 다음에 같은 브라우저로 접속하면
+            이어서 사용할 수 있어요. 검사 응답과 계산된 결과는 자동 저장이나
+            백업 파일에 포함하지 않습니다.
           </p>
         </section>
         <section className="panel">
-          <h2>보관을 선택했다면</h2>
+          <h2>같은 브라우저를 함께 쓴다면</h2>
           <p>
             같은 브라우저를 사용하는 사람이 기록을 볼 수 있습니다. 공유
             기기에서는 보관을 끄거나 사용 후 아래에서 지워주세요. 보관을 끄면
             저장소의 기록은 지워지고 현재 화면에서만 이어서 사용할 수 있습니다.
             브라우저 데이터를 삭제하면 보관한 기록도 사라지며, 다른 기기와
-            동기화되지 않습니다.
+            동기화되지 않습니다. 자동 저장을 끄거나 전체 기록을 지우면, 개인
+            기록은 삭제되고 ‘저장 꺼짐’ 설정만 남습니다. 다른 기기에서 이어
+            쓰려면 백업 파일을 옮겨 직접 불러와주세요.
           </p>
         </section>
         <section className="panel">
@@ -59,7 +64,6 @@ export default function PrivacyPage() {
           </p>
         </section>
       </div>
-      <StorageNotice />
       <section className="panel mt-6">
         <h2>새롭게 시작하고 싶을 때</h2>
         <p className="panel-description">
@@ -97,8 +101,7 @@ export default function PrivacyPage() {
           <button
             className="button danger-button"
             onClick={() => {
-              clear();
-              setCleared(true);
+              setCleared(clear());
               setConfirm(false);
             }}
           >

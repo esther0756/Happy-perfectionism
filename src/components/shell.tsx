@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { BrandMark } from "./illustrations";
 import { RestTimer } from "./rest-timer";
+import { SaveStatus } from "./ui";
 
 const navigation = [
   { href: "/", label: "나의 작은 출발", icon: Home },
@@ -30,6 +31,9 @@ const navigation = [
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const recordPage = ["/journal", "/practice", "/about-me", "/privacy"].some(
+    (path) => pathname.startsWith(path),
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const sidebar = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -148,7 +152,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             className="privacy-link"
             onClick={() => setMenuOpen(false)}
           >
-            기록과 개인정보 안내 <ArrowUpRight size={13} />
+            저장·백업 및 개인정보 <ArrowUpRight size={13} />
           </Link>
         </div>
       </aside>
@@ -169,8 +173,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <span>{active?.label ?? "기록과 개인정보"}</span>
           </div>
           <div className="topbar-message">
-            <Sun size={17} />
-            오늘도, 나의 속도로
+            {recordPage ? (
+              <SaveStatus />
+            ) : (
+              <>
+                <Sun size={17} />
+                오늘도, 나의 속도로
+              </>
+            )}
           </div>
         </header>
         <main id="main" className="main-content" tabIndex={-1}>
@@ -179,8 +189,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <footer className="footer">
           <span>행복한 완벽주의를 향하여</span>
           <p>
-            대학생들을 위한 자기이해•성장 프로젝트. 서울대학교 사범대학 과목
-            {" "}&lt;협력과 성장&gt;에서 제작한 사이트입니다
+            대학생들을 위한 자기이해•성장 프로젝트. 서울대학교 사범대학 과목{" "}
+            &lt;협력과 성장&gt;에서 제작한 사이트입니다
           </p>
           <Link href="/privacy">개인정보 안내</Link>
         </footer>

@@ -46,7 +46,7 @@ function timeEnd(task: Task) {
 }
 
 function JournalContent() {
-  const { data, update, ready, persist } = useApp();
+  const { data, update, ready } = useApp();
   const search = useSearchParams();
   const [date, setDate] = useState("");
   const [taskForm, setTaskForm] = useState<Task | null>(null);
@@ -355,9 +355,7 @@ function JournalContent() {
                 : "오늘의 결과와 상관없이, 나를 돌아본 이 시간이 소중해요. 내일도 나의 속도로 이어가요."}
             </div>
             <p className="fine-print mt-4">
-              {persist
-                ? "이 브라우저에 활동 기록을 보관하고 있어요."
-                : "이 화면을 열어둔 동안 기록이 유지돼요. 아래에서 보관을 켤 수 있어요."}
+              날짜를 바꾸면 그날의 계획과 회고를 다시 볼 수 있어요.
             </p>
           </section>
         </div>
