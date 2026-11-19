@@ -111,7 +111,7 @@ export default function TestPage() {
             </div>
           </section>
           <p className="source-note">
-            참고자료: {assessmentConfig.source}
+            출처: {assessmentConfig.source}
             <br />
             전문적인 심리 진단은 아니지만, 나를 돌아보는 데 도움이 될 수 있어요.
           </p>
