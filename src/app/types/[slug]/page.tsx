@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Heart, Sprout } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { profiles } from "@/lib/content";
 import { TypeSymbol } from "@/components/illustrations";
 import { AvoidantDetail } from "@/components/avoidant-detail";
+import { ExpandedProfileDetail } from "@/components/expanded-profile-detail";
 
 export function generateStaticParams() {
   return profiles.map((p) => ({ slug: p.slug }));
@@ -41,36 +42,11 @@ export default async function ProfilePage({
           <p>“{p.quote}”</p>
         </div>
       </section>
-      {p.slug === "avoidant" ? <AvoidantDetail /> : <>
-      <p className="profile-description">{p.description}</p>
-      <div className="profile-body">
-        <section className="panel">
-          <h2>
-            <Sprout size={20} className="inline mr-2" />내 안의 강점
-          </h2>
-          <p>{p.strength}</p>
-        </section>
-        <section className="panel">
-          <h2>
-            <Heart size={20} className="inline mr-2" />
-            마음이 힘들어질 때
-          </h2>
-          <p>{p.difficulty}</p>
-        </section>
-      </div>
-      <section className="panel">
-        <span className="eyebrow">오늘 할 수 있는 작은 연습</span>
-        <h2>{p.action}</h2>
-        <p className="panel-description">{p.actionDetail}</p>
-        <Link href={`/practice?type=${p.slug}`} className="button primary">
-          이 마음을 위한 연습하기 <ArrowRight size={16} />
-        </Link>
-      </section>
-      <div className="practice-quote">
-        <small>나에게 건네는 한 문장</small>
-        <p>“{p.reframe}”</p>
-      </div>
-      </>}
+      {p.slug === "avoidant" ? (
+        <AvoidantDetail />
+      ) : (
+        <ExpandedProfileDetail slug={p.slug} />
+      )}
       <section className="spaced-section">
         <div className="section-heading">
           <h2>다른 모습도 살펴볼까요?</h2>
