@@ -2,14 +2,12 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
-  Asterisk,
   Check,
   Clock3,
   Heart,
   Leaf,
   LockKeyhole,
   NotebookPen,
-  Sparkles,
 } from "lucide-react";
 import { GrowingIllustration, TypeSymbol } from "@/components/illustrations";
 import { profiles } from "@/lib/content";
@@ -55,14 +53,6 @@ export default function HomePage() {
           <span className="art-caption">성장은, 나의 속도로.</span>
         </div>
       </section>
-      <div className="daily-quote">
-        <span className="quote-label">
-          <Sparkles size={16} />
-          오늘의 다정한 문장
-        </span>
-        <p>“오늘 해낸 작은 일도, 충분히 의미 있는 한 걸음이에요.”</p>
-        <Asterisk className="quote-flower" size={25} aria-hidden="true" />
-      </div>
       <section className="journey-section">
         <div className="section-heading">
           <div>
@@ -162,7 +152,6 @@ export default function HomePage() {
         </div>
         <div>
           <h3>행복한 완벽주의를 향하여, 함께 걸어요.</h3>
-          <p>더 잘하는 나만큼, 더 편안한 나도 소중하니까요.</p>
         </div>
         <Link href="/journal" className="text-link">
           나의 작은 실천 <ArrowRight size={17} />
