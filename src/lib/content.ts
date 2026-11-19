@@ -3,7 +3,7 @@ export const profiles = [
     slug: "avoidant",
     name: "회피형",
     subtitle: "시작 앞에서 망설이는 마음",
-    color: "sage",
+    color: "teal",
     symbol: "seed",
     quote: "잘하고 싶은 마음이 커서, 시작이 어려워요.",
     description:

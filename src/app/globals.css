@@ -558,6 +558,15 @@ p {
   color: var(--tone);
   background: var(--tint);
 }
+.teal {
+  --tone: #347b89;
+  --tint: #e7f2f5;
+  --type-ink: #2b5360;
+  --type-muted: #4f6c77;
+  --type-border: #c9dfe4;
+  color: var(--tone);
+  background: var(--tint);
+}
 .peach {
   --tone: #aa7150;
   --tint: #f7ece0;
@@ -1575,6 +1584,52 @@ textarea.input {
 .practice-activity .type-symbol {
   width: 70px;
   height: 70px;
+}
+.teal:is(
+  .type-preview,
+  .profile-card,
+  .profile-hero,
+  .result-primary,
+  .practice-activity
+) {
+  color: var(--type-ink);
+  background: var(--tint);
+  border-color: var(--type-border);
+}
+.teal .type-symbol {
+  color: var(--tone);
+}
+.teal :is(h1, h2, h3, h4, blockquote),
+.teal .result-total strong {
+  color: var(--type-ink);
+}
+.teal :is(p, .eyebrow, .card-link, .type-arrow, .result-total) {
+  color: var(--type-muted);
+}
+.teal :is(.card-link, .result-traits) {
+  border-color: var(--type-border);
+}
+.teal .primary {
+  background: var(--tone);
+}
+.teal .primary:hover:not(:disabled) {
+  background: #285e6d;
+}
+.teal .secondary {
+  color: var(--tone);
+  border-color: var(--type-border);
+}
+.teal .secondary:hover:not(:disabled) {
+  color: #285e6d;
+  background: #dbecef;
+}
+.teal :is(.gentle-note, .step-marker) {
+  color: var(--type-ink);
+  background: #dbecef;
+  border-color: var(--type-border);
+}
+.teal .gentle-note svg {
+  color: var(--tone);
 }
 .value-grid {
   display: grid;
