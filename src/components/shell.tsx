@@ -179,8 +179,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <footer className="footer">
           <span>행복한 완벽주의를 향하여</span>
           <p>
-            서울대생을 위한 자기이해 프로젝트 · 서울대학교 공식 서비스가
-            아닙니다.
+            대학생들을 위한 자기이해.성장 프로젝트. 서울대학교 사범대학 과목
+            {" "}&lt;협력과 성장&gt;에서 제작한 사이트입니다
           </p>
           <Link href="/privacy">개인정보 안내</Link>
         </footer>
