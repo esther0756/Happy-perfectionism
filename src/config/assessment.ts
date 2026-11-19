@@ -1,26 +1,27 @@
+import type { ProfileSlug } from "@/lib/content";
+
 /**
  * 문항: 사용자가 제공한 「생활 속 완벽주의 유형 체크리스트」 이미지 전사.
  * 이미지에 적힌 출처: 윤닥(2022), 오늘도 시작하지 못하는 당신을 위해, 한빛비즈.
- * 표시된 배정/합산 안내는 자료의 기록이며 검증된 판정 규칙이 아니다.
- * 동점, 응답 척도의 중간 명칭, 타당도와 사용 범위는 아직 확인되지 않았다.
- * 승인 전에는 분류/합산/순위 산출을 하지 않는다. UI에서 응답 완료만 안내한다.
+ * 사용자의 요청으로 이미지의 문항 배정과 단순 합산 방식을 활성화했다.
+ * 공동 순위와 둘째 유형의 표시 기준은 사이트의 표시 정책이다.
+ * 자동 합산의 활성화가 검사의 임상적 타당성 검증을 의미하지는 않는다.
  */
 export const assessmentConfig = {
-  status: "pending_validation",
-  scoringEnabled: false,
-  version: "source-image-1",
+  version: "source-image-sum-1",
   source:
     "윤닥(2022), 『오늘도 시작하지 못하는 당신을 위해』, 한빛비즈. 제공된 이미지 기준.",
-  sourceDescription: {
-    groups: {
-      avoidant: [1, 2, 3, 4, 5],
-      controlling: [6, 7, 8, 9, 10],
-      selfCritical: [11, 12, 13, 14, 15],
-      balanced: [16, 17, 18, 19, 20],
-    },
-    methodInImage: "유형별 합산 점수가 높은 순서대로 정리",
-    validated: false,
-  },
+  groups: {
+    avoidant: [1, 2, 3, 4, 5],
+    controlling: [6, 7, 8, 9, 10],
+    "self-critical": [11, 12, 13, 14, 15],
+    balanced: [16, 17, 18, 19, 20],
+  } satisfies Record<ProfileSlug, readonly number[]>,
+  answerValues: [1, 2, 3, 4],
+  secondaryMaxGap: 2,
+  tiePolicy: "shared_rank",
+  methodInImage: "유형별 합산 점수가 높은 순서대로 정리",
+  clinicallyValidated: false,
 } as const;
 
 export const questions = [
@@ -70,18 +71,65 @@ export const questions = [
   { id: 20, text: "결과보다는 과정의 성취감을 중요시한다." },
 ] as const;
 
-export type Answer = 1 | 2 | 3 | 4;
+export type Answer = (typeof assessmentConfig.answerValues)[number];
 export type Answers = Partial<Record<number, Answer>>;
 
-export function getAssessmentOutcome(answers: Answers) {
-  const complete = questions.every(({ id }) =>
-    [1, 2, 3, 4].includes(answers[id] ?? 0),
-  );
-  // Fail closed: enabling a flag alone must never introduce an unreviewed scoring algorithm.
+export type TypeScore = {
+  type: ProfileSlug;
+  total: number;
+  max: number;
+  rank: number;
+};
+export type CompletedAssessment = {
+  status: "complete";
+  answered: number;
+  scores: TypeScore[];
+  primary: TypeScore[];
+  secondary: TypeScore[];
+};
+export type AssessmentOutcome =
+  | CompletedAssessment
+  | { status: "incomplete"; answered: number };
+
+export function getAssessmentOutcome(answers: Answers): AssessmentOutcome {
+  const answered = questions.filter(({ id }) =>
+    assessmentConfig.answerValues.includes(answers[id] as Answer),
+  ).length;
+  if (answered !== questions.length) return { status: "incomplete", answered };
+
+  // Display order never participates in scoring; each answer belongs to its source ID.
+  const types = Object.keys(assessmentConfig.groups) as ProfileSlug[];
+  const totals = types
+    .map((type) => ({
+      type,
+      total: assessmentConfig.groups[type].reduce(
+        (sum, id) => sum + answers[id]!,
+        0,
+      ),
+      max: assessmentConfig.groups[type].length * 4,
+    }))
+    .sort((a, b) => b.total - a.total);
+  const scores = totals.map((score) => ({
+    ...score,
+    rank: 1 + totals.filter((other) => other.total > score.total).length,
+  }));
+  const primary = scores.filter((score) => score.rank === 1);
+  // Tied first places are all primary. Tied second places share the smaller card.
+  const secondary =
+    primary.length === 1
+      ? scores.filter(
+          (score) =>
+            score.rank === 2 &&
+            primary[0].total - score.total <= assessmentConfig.secondaryMaxGap,
+        )
+      : [];
   return {
-    status: complete ? "pending_validation" : "incomplete",
-    answered: questions.filter((q) => answers[q.id]).length,
-  } as const;
+    status: "complete",
+    answered,
+    scores,
+    primary,
+    secondary,
+  };
 }
 
 export function shuffledQuestionIds() {

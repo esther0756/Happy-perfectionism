@@ -1144,6 +1144,252 @@ textarea.input {
 .response-list {
   margin-top: 25px;
 }
+.assessment-result {
+  display: grid;
+  gap: 22px;
+}
+.result-intro {
+  margin-bottom: 18px;
+}
+.result-intro h2 {
+  font-size: 19px;
+  font-weight: 550;
+  line-height: 1.7;
+}
+.result-intro p {
+  color: #626d57;
+  font-size: 12px;
+  margin-top: 9px;
+}
+.result-primary-list {
+  display: grid;
+  gap: 18px;
+}
+.result-primary {
+  border: 1px solid #dce1d2;
+  border-radius: 12px;
+  padding: 30px;
+  color: #40533a;
+}
+.result-primary-heading {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+.result-primary-heading .type-symbol {
+  color: var(--tone);
+  width: 66px;
+  height: 66px;
+}
+.result-primary-heading .eyebrow {
+  margin-bottom: 5px;
+}
+.result-primary h3 {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.result-total {
+  margin-left: auto;
+  font-size: 12px;
+  white-space: nowrap;
+  color: #626d57;
+}
+.result-total strong {
+  font-size: 25px;
+  color: #40533a;
+  font-weight: 600;
+}
+.result-quote {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 22px 0 12px;
+}
+.result-description {
+  color: #626d57;
+  font-size: 13px;
+}
+.result-traits {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  border-top: 1px solid #ced6c5;
+  margin: 23px 0;
+  padding-top: 22px;
+}
+.result-traits h4 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.result-traits p {
+  font-size: 12px;
+  color: #626d57;
+}
+.result-secondary {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 21px 24px;
+  background: #fffefa;
+}
+.result-secondary h2 {
+  font-size: 16px;
+  font-weight: 550;
+}
+.result-secondary > p {
+  font-size: 11px;
+  color: #626d57;
+  margin: 8px 0 14px;
+}
+.result-secondary-list {
+  display: grid;
+  gap: 12px;
+}
+.result-secondary-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-radius: 7px;
+  padding: 8px;
+}
+.result-secondary-item:hover {
+  background: #f2f4e9;
+}
+.result-small-symbol {
+  border-radius: 50%;
+  padding: 8px;
+}
+.result-small-symbol .type-symbol {
+  width: 27px;
+  height: 27px;
+}
+.result-secondary-item strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.result-secondary-item small {
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+  color: #626d57;
+}
+.result-secondary-score {
+  margin-left: auto;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.result-score-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 19px;
+}
+.result-score-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.result-score-label small {
+  font-size: 10px;
+  color: #626d57;
+  font-weight: 400;
+  margin-left: 5px;
+}
+.result-score-label strong {
+  font-weight: 550;
+}
+.result-score-track {
+  background: #efeee5;
+  height: 9px;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.result-score-fill {
+  background: var(--tone);
+  height: 100%;
+  border-radius: 9px;
+}
+.result-method {
+  margin-top: 24px;
+  padding-top: 17px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.result-method summary {
+  cursor: pointer;
+  color: #526748;
+}
+.result-method p {
+  font-size: 11px;
+  color: #626d57;
+  margin-top: 12px;
+}
+.assessment-result .source-note {
+  margin-top: 0;
+}
+.result-next {
+  gap: 8px;
+}
+@media (max-width: 520px) {
+  .result-primary {
+    padding: 23px 20px;
+  }
+  .result-primary-heading {
+    gap: 11px;
+    flex-wrap: wrap;
+  }
+  .result-primary-heading .type-symbol {
+    width: 49px;
+    height: 49px;
+  }
+  .result-primary h3 {
+    font-size: 22px;
+  }
+  .result-total {
+    margin-left: 60px;
+    margin-top: -5px;
+  }
+  .result-total strong {
+    font-size: 20px;
+  }
+  .result-quote {
+    font-size: 14px;
+    margin-top: 17px;
+  }
+  .result-traits {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+  .result-primary .button-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .result-primary .button {
+    font-size: 12px;
+  }
+  .result-secondary {
+    padding: 20px 17px;
+  }
+  .result-secondary-item {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 5px 0;
+  }
+  .result-secondary-score {
+    font-size: 11px;
+  }
+  .result-secondary-item > svg {
+    display: none;
+  }
+  .result-secondary-item small {
+    max-width: 150px;
+  }
+  .result-intro h2 {
+    font-size: 17px;
+  }
+}
 .response-list summary {
   padding: 16px 0;
   font-size: 13px;

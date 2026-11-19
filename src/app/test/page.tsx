@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -10,7 +9,6 @@ import {
   Info,
   LockKeyhole,
   RotateCcw,
-  Sprout,
 } from "lucide-react";
 import {
   assessmentConfig,
@@ -21,6 +19,7 @@ import {
 } from "@/config/assessment";
 import { useApp } from "@/lib/state";
 import { GrowingIllustration } from "@/components/illustrations";
+import { AssessmentResult } from "@/components/assessment-result";
 import { Modal, PageIntro } from "@/components/ui";
 
 export default function TestPage() {
@@ -29,6 +28,8 @@ export default function TestPage() {
   const heading = useRef<HTMLHeadingElement>(null);
   const answered = Object.keys(quiz.answers).length;
   const question = questions.find((q) => q.id === quiz.order[quiz.index]);
+  const outcome = getAssessmentOutcome(quiz.answers);
+  const showResult = quiz.completed && outcome.status === "complete";
   const start = () => {
     setQuiz({
       order: shuffledQuestionIds(),
@@ -43,18 +44,33 @@ export default function TestPage() {
     requestAnimationFrame(() => heading.current?.focus());
   };
   const finish = () => {
-    if (getAssessmentOutcome(quiz.answers).status === "pending_validation") {
+    if (outcome.status === "complete") {
       setQuiz((q) => ({ ...q, completed: true }));
       window.scrollTo({ top: 0, behavior: "smooth" });
+      requestAnimationFrame(() =>
+        document
+          .getElementById("result-heading")
+          ?.focus({ preventScroll: true }),
+      );
     }
   };
   return (
     <div className="narrow-page">
       <PageIntro
-        eyebrow="나를 이해하는 첫 번째 걸음"
-        title="나의 완벽주의를 만나볼까요?"
+        eyebrow={
+          showResult ? "나의 완벽주의 유형" : "나를 이해하는 첫 번째 걸음"
+        }
+        title={
+          showResult
+            ? "지금 나의 마음은 이런 모습이에요."
+            : "나의 완벽주의를 만나볼까요?"
+        }
       >
-        <p>정답은 없어요. 요즘 나의 모습과 가장 가까운 쪽을 골라주세요.</p>
+        <p>
+          {showResult
+            ? "잘하고 싶은 마음을 이해하는 것부터, 조금 더 편안한 나로 나아가요."
+            : "정답은 없어요. 요즘 나의 모습과 가장 가까운 쪽을 골라주세요."}
+        </p>
       </PageIntro>
       {!quiz.order.length ? (
         <>
@@ -85,8 +101,8 @@ export default function TestPage() {
               <div className="gentle-note">
                 <Info size={17} />
                 <span>
-                  현재는 질문 체험 버전이에요. 채점 규칙을 검토 중이므로 점수와
-                  유형 판정은 제공하지 않아요.
+                  모든 질문에 답하면 유형별 점수를 합산해 나의 완벽주의 유형을
+                  보여드려요. 나를 이해하는 가벼운 실마리로 만나보세요.
                 </span>
               </div>
               <button className="button primary full" onClick={start}>
@@ -101,37 +117,9 @@ export default function TestPage() {
             대신하지 않습니다.
           </p>
         </>
-      ) : quiz.completed ? (
+      ) : showResult ? (
         <>
-          <section className="panel completion-card">
-            <span className="round-icon sage">
-              <Sprout size={31} />
-            </span>
-            <span className="eyebrow">20개의 질문, 나를 돌아본 시간</span>
-            <h2>내 마음에 귀 기울여줘서 고마워요.</h2>
-            <p>
-              모든 질문에 답했어요. 어떤 문항이 특히 마음에 남았나요?
-              <br />그 질문이 오늘 나를 이해하는 작은 실마리가 될 수 있어요.
-            </p>
-            <div className="gentle-note">
-              <Info size={19} />
-              <span>
-                <strong>유형 판정은 아직 준비 중이에요.</strong>
-                <br />
-                자료의 채점 방식과 동점 처리 등을 검증하기 전까지 유형을
-                자동으로 확정하지 않아요. 아래에서 네 가지 모습을 직접 살펴볼 수
-                있어요.
-              </span>
-            </div>
-            <div className="button-row center">
-              <Link href="/types" className="button primary">
-                네 가지 유형 살펴보기 <ArrowRight size={17} />
-              </Link>
-              <Link href="/journal" className="button secondary">
-                오늘의 작은 실천 기록하기
-              </Link>
-            </div>
-          </section>
+          <AssessmentResult outcome={outcome} />
           <details className="response-list">
             <summary>내가 선택한 응답 다시 살펴보기</summary>
             {questions.map((q) => (

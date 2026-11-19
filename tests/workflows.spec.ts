@@ -1,12 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import {
-  assessmentConfig,
-  getAssessmentOutcome,
-  questions,
-  shuffledQuestionIds,
-  type Answers,
-} from "../src/config/assessment";
+import { questions, type Answer } from "../src/config/assessment";
 
 const storageKey = "happy-perfectionism:v1";
 async function addTask(page: Page, title: string) {
@@ -19,28 +13,38 @@ async function addTask(page: Page, title: string) {
   await page.getByRole("button", { name: "오늘에 담기", exact: true }).click();
 }
 
-test("채점은 응답이 완료되어도 검증 전까지 차단된다", () => {
-  expect(assessmentConfig.scoringEnabled).toBe(false);
-  expect(getAssessmentOutcome({}).status).toBe("incomplete");
-  const answers = Object.fromEntries(
-    questions.map((q) => [q.id, 4]),
-  ) as Answers;
-  expect(getAssessmentOutcome(answers)).toEqual({
-    status: "pending_validation",
-    answered: 20,
-  });
-  delete answers[20];
-  expect(getAssessmentOutcome(answers).status).toBe("incomplete");
-  expect(shuffledQuestionIds().sort((a, b) => a - b)).toEqual(
-    questions.map((q) => q.id),
-  );
-});
-
-test("20문항 무작위 순서, 이전 응답 수정, 판정 대기와 응답 비보관", async ({
+test("섞인 문항의 정확한 결과, 2점 이내 둘째 유형, 응답 수정과 비보관", async ({
   page,
-}) => {
+}, testInfo) => {
+  test.setTimeout(60000);
+  // Source IDs 1–5: 18, 6–10: 11, 11–15: 16, 16–20: 12.
+  const responses: Answer[] = [
+    4, 4, 4, 3, 3, 2, 2, 3, 2, 2, 3, 3, 4, 3, 3, 2, 2, 3, 3, 2,
+  ];
+  const answerCurrent = async () => {
+    const text = await page.locator("#question-text").innerText();
+    const question = questions.find((q) => q.text === text)!;
+    await page
+      .getByRole("radio", {
+        name: new RegExp(`^${responses[question.id - 1]}점`),
+      })
+      .check();
+    return text;
+  };
   const errors: string[] = [];
+  const transmissions: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (
+      !["GET", "HEAD"].includes(request.method()) ||
+      url.searchParams.has("type") ||
+      /\/types\/(avoidant|controlling|self-critical|balanced)/.test(
+        url.pathname,
+      )
+    )
+      transmissions.push(request.url());
+  });
   await page.goto("/privacy/");
   await page.getByLabel("이 브라우저에 활동 기록 보관하기").check();
   await page
@@ -60,13 +64,10 @@ test("20문항 무작위 순서, 이전 응답 수정, 판정 대기와 응답 �
   await expect(
     page.getByRole("radio", { name: "1점, 매우 그렇지 않다", exact: true }),
   ).toBeChecked();
-  await page
-    .getByRole("radio", { name: "4점, 매우 그렇다", exact: true })
-    .check();
+  await answerCurrent();
   await page.getByRole("button", { name: "다음 질문" }).click();
   for (let index = 1; index < 20; index++) {
-    shown.push(await page.locator("#question-text").innerText());
-    await page.getByRole("radio", { name: "3점", exact: true }).check();
+    shown.push(await answerCurrent());
     if (index < 19)
       await page.getByRole("button", { name: "다음 질문" }).click();
   }
@@ -77,13 +78,74 @@ test("20문항 무작위 순서, 이전 응답 수정, 판정 대기와 응답 �
     "20",
   );
   await page.getByRole("button", { name: "응답 마치고 확인하기" }).click();
-  await expect(page.getByText("유형 판정은 아직 준비 중이에요.")).toBeVisible();
+  await expect(page.locator(".result-primary h3")).toHaveText(
+    "회피형 완벽주의",
+  );
+  await expect(page.locator(".result-primary .result-total")).toContainText(
+    "18",
+  );
+  await expect(page.locator(".result-secondary strong")).toHaveText(
+    "자책형 완벽주의",
+  );
+  await expect(page.locator(".result-secondary-score")).toContainText("16");
+  await expect(
+    page.getByRole("listitem", { name: "감독형 11점", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("listitem", { name: "안정형 12점", exact: true }),
+  ).toBeVisible();
+  const audit = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .analyze();
+  expect(
+    audit.violations.map((v) => ({
+      id: v.id,
+      targets: v.nodes.map((n) => n.target),
+    })),
+  ).toEqual([]);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`result-${width}.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
   const saved = await page.evaluate(
     (key) => localStorage.getItem(key),
     storageKey,
   );
   expect(saved).not.toContain("answers");
   expect(saved).not.toContain("order");
+  expect(saved).not.toContain("scores");
+  expect(saved).not.toContain("primary");
+  expect(await page.evaluate(() => sessionStorage.length)).toBe(0);
+  expect(new URL(page.url()).search).toBe("");
+  expect(transmissions).toEqual([]);
+
+  // Change source question 1 from 4 to 2; the previous winner now ties at 16.
+  responses[0] = 2;
+  await page.getByRole("button", { name: "응답 수정하기" }).click();
+  for (let index = 0; index < 20; index++) {
+    expect(await answerCurrent()).toBe(shown[index]);
+    if (index < 19)
+      await page.getByRole("button", { name: "다음 질문" }).click();
+  }
+  await page.getByRole("button", { name: "응답 마치고 확인하기" }).click();
+  await expect(page.locator(".result-primary h3")).toHaveText([
+    "회피형 완벽주의",
+    "자책형 완벽주의",
+  ]);
+  await expect(page.locator(".result-secondary")).toHaveCount(0);
+  await expect(
+    page.getByText("2개 유형이 16점으로 같아요.", { exact: false }),
+  ).toBeVisible();
   await page.reload();
   await expect(
     page.getByRole("button", { name: "질문 시작하기" }),
