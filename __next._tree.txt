@@ -1,4 +1,4 @@
 :HL["/Happy-perfectionism/_next/static/chunks/1ytkp3i1vegip.css","style"]
 :HC["/",""]
 1:[["children",{"s":"__PAGE__","h":160}]]
-0:{"b":"3QQ4WXdz_J0NEdd1ZHOZB","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"7Q_dXvdPGHneaMEUFckiV","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
