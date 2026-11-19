@@ -111,10 +111,9 @@ export default function TestPage() {
             </div>
           </section>
           <p className="source-note">
-            {assessmentConfig.source}
+            참고자료: {assessmentConfig.source}
             <br />
-            제공된 자료를 바탕으로 질문을 옮겼으며, 전문적인 심리 진단을
-            대신하지 않습니다.
+            전문적인 심리 진단은 아니지만, 나를 돌아보는 데 도움이 될 수 있어요.
           </p>
         </>
       ) : showResult ? (

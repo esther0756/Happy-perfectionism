@@ -10,7 +10,7 @@ import type { ProfileSlug } from "@/lib/content";
 export const assessmentConfig = {
   version: "source-image-sum-1",
   source:
-    "윤닥(2022), 『오늘도 시작하지 못하는 당신을 위해』, 한빛비즈. 제공된 이미지 기준.",
+    "윤닥(2022), 『오늘도 시작하지 못하는 당신을 위해』, 한빛비즈.",
   groups: {
     avoidant: [1, 2, 3, 4, 5],
     controlling: [6, 7, 8, 9, 10],
