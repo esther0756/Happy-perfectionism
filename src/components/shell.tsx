@@ -109,7 +109,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <Link href="/" className="brand" onClick={() => setMenuOpen(false)}>
           <BrandMark />
           <span>
-            행복한 완벽주의<small>조금 더 나다운, 조금 더 편안한</small>
+            행복한 완벽주의
+            <small>
+              나를 이해하는 것부터,
+              <br />
+              나에게 맞는 하루를 만드는 것까지.
+            </small>
           </span>
         </Link>
         <button
@@ -187,7 +192,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <footer className="footer">
-          <span>행복한 완벽주의를 향하여</span>
+          <span>행복한 완벽주의</span>
           <p>
             대학생들을 위한 자기이해•성장 프로젝트. 서울대학교 사범대학 과목{" "}
             &lt;협력과 성장&gt;에서 제작한 사이트입니다

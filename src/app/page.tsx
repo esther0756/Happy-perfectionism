@@ -21,17 +21,17 @@ export default function HomePage() {
         <div className="hero-copy">
           <div className="hero-eyebrow">
             <span />
-            <span>서울대생을 위한 완벽주의 유형 탐색</span>
+            <span>행복한 완벽주의</span>
           </div>
           <h1>
-            완벽하지 않아도 괜찮아.
+            나를 이해하는 것부터,
             <br />
-            <span>나답게, 한 걸음씩.</span>
+            <span>나에게 맞는 하루를 만드는 것까지.</span>
           </h1>
           <p>
-            잘하고 싶은 마음이 나를 지치게 할 때,
+            나의 완벽주의 성향을 알아보고,
             <br />
-            나의 완벽주의를 이해하고 조금 더 편안한 나를 만나보세요.
+            오늘의 에너지와 우선순위에 맞춰 하루를 계획해보세요.
           </p>
           <Link className="button primary hero-cta" href="/test">
             나의 완벽주의 유형 알아보기 <ArrowRight size={18} />

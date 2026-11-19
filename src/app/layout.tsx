@@ -6,11 +6,11 @@ import { Shell } from "@/components/shell";
 
 export const metadata: Metadata = {
   title: {
-    default: "행복한 완벽주의를 향하여 — 서울대생을 위한 완벽주의 유형 분석",
+    default: "행복한 완벽주의",
     template: "%s | 행복한 완벽주의",
   },
   description:
-    "서울대생을 위한 완벽주의 유형 탐색과 자기이해. 나의 속도로 알아가고, 작은 실천을 기록해요.",
+    "나를 이해하는 것부터, 나에게 맞는 하루를 만드는 것까지.",
 };
 
 export default function RootLayout({
