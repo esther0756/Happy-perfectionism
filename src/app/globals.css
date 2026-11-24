@@ -1792,6 +1792,14 @@ textarea.input {
   margin-left: 6px;
   color: #626d57;
 }
+.journal-stat .planned-duration {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15em 0.3em;
+}
+.planned-duration > span {
+  white-space: nowrap;
+}
 .journal-stat p {
   font-size: 11px;
   color: #626d57;

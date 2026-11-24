@@ -28,11 +28,13 @@ const priorityLabels = {
   low: "여유가 있으면",
 };
 const priorityOrder = { high: 0, medium: 1, low: 2 };
+const energyLabels = { low: "적게", medium: "보통", high: "많이" };
 const blankTask = (): Task => ({
   id: "",
   title: "",
   priority: "medium",
   minutes: 25,
+  energy: null,
   delegate: "",
   time: "",
   done: false,
@@ -84,8 +86,8 @@ function JournalContent() {
     }));
   const tasks = [...day.tasks].sort(
     (a, b) =>
-      Number(a.done) - Number(b.done) ||
-      priorityOrder[a.priority] - priorityOrder[b.priority],
+      priorityOrder[a.priority] - priorityOrder[b.priority] ||
+      (a.time || "24:00").localeCompare(b.time || "24:00"),
   );
   const scheduled = day.tasks
     .filter((t) => t.time)
@@ -106,7 +108,7 @@ function JournalContent() {
     if (
       !taskForm ||
       !taskForm.title.trim() ||
-      taskForm.minutes < 5 ||
+      taskForm.minutes < 1 ||
       taskForm.minutes > 720 ||
       !Number.isInteger(taskForm.minutes)
     )
@@ -184,13 +186,9 @@ function JournalContent() {
         </div>
         <div className="journal-stat">
           <span>계획한 시간</span>
-          <strong>
-            {totalMinutes >= 60
-              ? `${Math.floor(totalMinutes / 60)}시간`
-              : totalMinutes}
-            <small>
-              {totalMinutes >= 60 ? `${totalMinutes % 60}분` : "분"}
-            </small>
+          <strong className="planned-duration">
+            {totalMinutes >= 60 && <span>{Math.floor(totalMinutes / 60)}시간</span>}
+            <span>{totalMinutes % 60}분</span>
           </strong>
         </div>
         <div className="journal-stat">
@@ -272,6 +270,7 @@ function JournalContent() {
             </div>
             <p className="panel-description">
               내 가치, 오늘의 에너지와 현실을 생각하며 순서를 정해보세요.
+              같은 우선순위에서는 시작 시각 순으로, 시각이 없는 일은 뒤에 보여요.
             </p>
             {data.values.length > 0 && (
               <div className="gentle-note mb-5">
@@ -323,6 +322,7 @@ function JournalContent() {
                           {task.minutes}분
                         </span>
                         {task.time && <span>{task.time}</span>}
+                        {task.energy && <span>에너지 {energyLabels[task.energy]}</span>}
                         {task.delegate && (
                           <span>
                             <Users size={11} />
@@ -562,7 +562,7 @@ function JournalContent() {
                 <input
                   className="input"
                   type="number"
-                  min={5}
+                  min={1}
                   max={720}
                   step={1}
                   required
@@ -576,6 +576,19 @@ function JournalContent() {
                 />
               </label>
             </div>
+            <label className="field">
+              <span>필요한 에너지 <small className="field-hint">선택</small></span>
+              <select
+                className="input"
+                value={taskForm.energy ?? ""}
+                onChange={(e) => setTaskForm({ ...taskForm, energy: (e.target.value || null) as Task["energy"] })}
+              >
+                <option value="">아직 정하지 않았어요</option>
+                {Object.entries(energyLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </label>
             <label className="field">
               <span>
                 누구에게 부탁할 수 있나요?{" "}
