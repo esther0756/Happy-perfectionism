@@ -40,7 +40,7 @@ jobs:
           NEXT_PUBLIC_BASE_PATH: /Happy-perfectionism
         run: npm run build
       - name: Publish generated static site to gh-pages
-        uses: peaceirisland/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./out
